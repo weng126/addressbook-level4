@@ -1,24 +1,31 @@
 language: java
+dist: trusty
+jdk:
+ - openjdk8
+ - openjdk9
+ - openjdk10
+ - openjdk11
+ - openjdk12
+ - openjdk13
+ - openjdk14
+ - openjdk15
+script: mvn clean install --batch-mode && mvn test -Pskip-default-test -Pintegration-test
 matrix:
-  include:
-    - jdk: openjdk11
-
-script: >-
-    ./config/travis/run-checks.sh &&
-    ./gradlew clean checkstyleMain checkstyleTest headless allTests coverage coveralls asciidoctor
-
-deploy:
-  skip_cleanup: true
-  provider: script
-  script: ./config/travis/deploy_github_pages.sh
-  on:
-    branch: master
-
-before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-
-cache:
-  directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+    - jdk: openjdk8
+branches:
+  only:
+    - master
+after_success:
+  - mvn jacoco:report coveralls:report
+notifications:
+  email: false
+  irc:
+    channels:
+      - "irc.freenode.org#openmrs"
+    template:
+      - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
+      - "Change view : %{compare_url}"
+      - "Build details : %{build_url}"
+    use_notice: true
+    skip_join: true
+sudo: false
